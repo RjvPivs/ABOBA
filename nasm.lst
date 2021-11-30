@@ -1,0 +1,39 @@
+     1                                  global CountPunc
+     2                                  CountPunc:
+     3                                  section .data							
+     4 00000000 2E2C213F2D28293A3B-     	stringPunctuation	db ".,!?-():;",0
+     4 00000009 00                 
+     5 0000000A 256900                          stringInt db "%i",0
+     6                                  section .text							
+     7 00000000 55                              push rbp
+     8 00000001 4889E5                          mov rbp,rsp
+     9 00000004 4989FA                          mov r10,rdi
+    10 00000007 4989F3                          mov r11,rsi
+    11 0000000A 41B800000000                    mov r8d,0    ; counter
+    12 00000010 41B900000000                    mov r9,0    ; alph counter
+    13 00000016 488D3425[00000000]              lea rsi,[stringPunctuation]	; 	search argument
+    14                                  bigloop:
+    15 0000001E 498D3A                          lea rdi,[r10] 	;	string
+    16 00000021 4C89D9                          mov rcx,r11
+    17 00000024 AC                              lodsb
+    18 00000025 FC                              cld
+    19                                  search:
+    20 00000026 AE                              scasb
+    21 00000027 7421                            je char_found
+    22                                  return:
+    23 00000029 E2FB                            loop search
+    24 0000002B 49FFC1                          inc r9
+    25 0000002E 4983F909                        cmp r9,9
+    26 00000032 75EA                            jne bigloop
+    27 00000034 F2410F2AC0                      cvtsi2sd xmm0, r8d
+    28 00000039 EB00                            jmp exit
+    29                                  exit:
+    30 0000003B F2490F2ACB              cvtsi2sd xmm1,r11
+    31 00000040 F20F5EC8                divsd xmm1,xmm0
+    32 00000044 F20F10C1                movsd xmm0,xmm1
+    33 00000048 C9                      leave
+    34 00000049 C3                      ret
+    35                                  
+    36                                  char_found:
+    37 0000004A 41FFC0                      inc r8d
+    38 0000004D EBDA                        jmp return

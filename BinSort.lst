@@ -1,0 +1,78 @@
+     1                                  ;(void* arr, void* indexes, int len)
+     2                                  global BinSort
+     3                                  BinSort:
+     4                                  section .data							
+     5                                  section .text							
+     6 00000000 55                              push rbp
+     7 00000001 4889E5                          mov rbp,rsp
+     8 00000004 4889FF                          mov rdi,rdi;arr
+     9 00000007 4889F6                          mov rsi,rsi; indexes
+    10 0000000A 4889D2                          mov rdx, rdx; len
+    11 0000000D 41B801000000                    mov r8, 1; index i
+    12 00000013 41B900000000                    mov r9, 0;index j
+    13                                  
+    14                                  bigloop:
+    15 00000019 4939D0                      cmp r8, rdx
+    16 0000001C 0F8DA8000000                jge exit
+    17 00000022 F2420F1004C7                movsd xmm0,qword[rdi+r8*8];r10=rsi[i], key r10 to xmm0
+    18 00000028 F2420F100CC6                movsd xmm1, qword[rsi+r8*8]; key index r15 to xmm1
+    19 0000002E E829000000                  call position
+    20 00000033 4D89C1                      mov r9, r8
+    21 00000036 49FFC9                      dec r9
+    22 00000039 B901000000                  mov rcx, 1
+    23 0000003E E22F                        loop fff
+    24 00000040 F2420F1104DF                movsd qword[rdi+r11*8], xmm0
+    25 00000046 F2420F110CDE                movsd qword[rsi, r11*8], xmm1
+    26 0000004C 41BB00000000                mov r11, 0; start is 0 again
+    27 00000052 49FFC0                      inc r8
+    28 00000055 4939D0                      cmp r8, rdx
+    29 00000058 7D70                        jge exit
+    30 0000005A 7CBD                        jl bigloop
+    31                                      
+    32                                  position:
+    33 0000005C 41BB00000000            mov r11, 0; r11 is start
+    34 00000062 4D89DC                  mov r12, r11; r12 = i, r12 is end
+    35 00000065 49FFCC                  dec r12; r12=i-1
+    36 00000068 B901000000              mov rcx, 1
+    37 0000006D E226                    loop search
+    38                                  
+    39                                  fff:
+    40 0000006F 4D39D9                  cmp r9, r11
+    41 00000072 7C44                    jl ccc
+    42 00000074 4D89CE                  mov r14,r9
+    43 00000077 49FFC6                  inc r14
+    44 0000007A F2420F1014F7            movsd xmm2,qword[rdi+r14*8] 
+    45 00000080 F2420F1114CF            movsd qword[rdi+r9*8], xmm2;arr[j+1]=arr[j]
+    46 00000086 F2420F1014F6            movsd xmm2,qword[rsi+r14*8]
+    47 0000008C F2420F1114CE            movsd qword[rsi+r9*8],xmm2
+    48 00000092 49FFC9                  dec r9
+    49                                  
+    50                                  search:
+    51 00000095 4D39E3                  cmp r11, r12
+    52 00000098 7F1E                    jg ccc
+    53 0000009A 4D89E5                  mov r13, r12; mid
+    54 0000009D 4D29DD                  sub r13, r11
+    55 000000A0 49D1FD                  sar r13, 1
+    56 000000A3 4D01DD                  add r13, r11
+    57 000000A6 F2420F100CEF            movsd xmm1, qword[rdi+r13*8]
+    58 000000AC 660F2FC1                comisd xmm0, xmm1
+    59 000000B0 7211                    jb ddd
+    60 000000B2 660F2FC8                comisd xmm1, xmm0
+    61 000000B6 7604                    jbe bbb
+    62                                  
+    63                                  ccc:
+    64 000000B8 48FFC9                  dec rcx
+    65 000000BB C3                      ret
+    66                                  bbb:
+    67                                  ;if key < arr[mid]
+    68 000000BC 4D89EC                  mov r12, r13
+    69 000000BF 49FFC4                   inc r12
+    70 000000C2 C3                       ret
+    71                                   ddd:
+    72                                   ; key > arr[mid]
+    73 000000C3 4D89EC                   mov r12, r13
+    74 000000C6 49FFCC                   dec r12
+    75 000000C9 C3                       ret 
+    76                                  exit:
+    77 000000CA C9                      leave
+    78 000000CB C3                      ret
